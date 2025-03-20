@@ -1,7 +1,7 @@
 import sys
 import math
 
-circle_file = sys.argv[1]  # Первый аргумент - файл с окружностью
+circle_file = sys.argv[1]
 points_file = sys.argv[2]
 
 with open('circle.txt', 'r') as f:
