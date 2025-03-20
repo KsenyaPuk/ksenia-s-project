@@ -1,54 +1,33 @@
-import sys
 import json
+import sys
 
-def update_values(node, values_dict):
-    """
-    Рекурсивно обходит структуру тестов и обновляет поле 'value'
-    на основе словаря values_dict.
-    """
-    if isinstance(node, dict):
-        # Если у текущего узла есть id, обновляем значение
-        if 'id' in node:
-            node_id = node['id']
-            if node_id in values_dict:
-                node['value'] = values_dict[node_id]
+values_json = sys.argv[1]
+tests_json = sys.argv[2]
+report_json = sys.argv[3]
 
-        # Рекурсивно обрабатываем вложенные элементы
-        if 'values' in node and isinstance(node['values'], list):
-            for item in node['values']:
-                update_values(item, values_dict)
+with open(tests_json, "r", encoding="UTF-8") as f:
+    tests_data = json.load(f)
 
-    elif isinstance(node, list):
-        # Обрабатываем каждый элемент списка
-        for item in node:
-            update_values(item, values_dict)
+with open(values_json, "r", encoding="UTF-8") as f:
+    values_data = json.load(f)
 
-def main():
-    # Получаем пути к файлам из аргументов
-    tests_path = sys.argv[1]
-    values_path = sys.argv[2]
-    report_path = sys.argv[3]
-
-    # Читаем данные тестов
-    with open(tests_path, 'r') as f:
-        tests_data = json.load(f)['tests']  # Получаем список тестов
-
-    # Читаем значения
-    with open(values_path, 'r') as f:
-        values_list = json.load(f)['values']  # Получаем список значений
+values = dict()
+for el in values_data['values']: # заполняем values, где ключи - id, значения - passed/failed
+    values[el['id']] = el['value']
 
 
-    # Создаем словарь для быстрого поиска: id -> value
-    values_dict = {item['id']: item['value'] for item in values_list}
+def fill(test):
+    if isinstance(test, dict):
+        if 'id' in test: # если в элементе есть ключ id
+            test_id = test['id']
+            test['value'] = values.get(test_id) # присваиваем значение из словаря values
+        for k in test:
+            fill(test[k])
+    elif isinstance(test, list):
+        for el in test:
+            fill(el)
 
-    # Обновляем значения в структуре тестов
-    for test in tests_data:
-        update_values(test, values_dict)
+fill(tests_data)
 
-    # Сохраняем результат
-    with open(report_path, 'w') as f:
-        json.dump({"tests": tests_data}, f, indent=2, ensure_ascii=False)
-        print("report.json successfully updated!")
-
-if __name__ == "__main__":
-    main()
+with open(report_json, "w", encoding="UTF-8") as f_out:
+    json.dump(tests_data, f_out, ensure_ascii=False, indent=2)

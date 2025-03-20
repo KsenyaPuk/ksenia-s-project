@@ -1,33 +1,23 @@
 import sys
 
+file_name = sys.argv[1]
 
-def main():
+with open(file_name, 'r') as f:
+    numbers = []
+    for line in f.readlines():
+        numbers.append(int(line))
 
-    file_name = sys.argv[1]  # Получаем имя файла из аргументов
+numbers.sort()
+count = len(numbers)
 
-    # Читаем числа из файла и добавляем в список
-    with open(file_name, 'r') as file:
-        numbers = [int(line.strip()) for line in file]
+index = count // 2
+if count % 2 != 0: # если нечетное берем значение в отсортированном списке по середине
+    median = numbers[index]
+else:
+    median = numbers[index - 1]
 
-    # Сортируем массив для нахождения медианы
-    numbers.sort()
-    count = len(numbers)
+counter = 0
+for num in numbers:
+    counter += abs(num - median)
 
-    # Вычисляем медиану
-    median_index = count // 2
-    if count % 2 == 1:
-        median = numbers[median_index]
-    else:
-        # Для четного количества берем левый из двух средних элементов
-        median = numbers[median_index - 1]
-
-    # Считаем общее количество ходов
-    total = 0
-    for num in numbers:
-        total += abs(num - median)
-
-    print(total)
-
-
-if __name__ == "__main__":
-    main()
+print(counter)
